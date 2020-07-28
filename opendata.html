@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://code.jquery.com/jquery-3.5.1.js"
+        integrity="sha256-QWo7LDvxbWT2tbbQ97B53yJnYU3WhH/C8ycbRAkjPDc=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.css" />
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css"
+        integrity="sha384-GJzZqFGwb1QTTN6wy59ffF1BuGJpLSa9DkKMp0DgiMDm4iYMj70gZWKYbI706tWS" crossorigin="anonymous">
+    <script type="text/javascript" src="https://cdn.datatables.net/v/dt/dt-1.10.21/datatables.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.6/umd/popper.min.js"
+        integrity="sha384-wHAiFfRlMFy6i5SRaxvfOCifBUQy1xHdJ/yoi7FRNXMRBu5WHdZYu1hA6ZOblgut"
+        crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/js/bootstrap.min.js"
+        integrity="sha384-B0UglyR+jN6CkvvICOB2joaf5I4l3gm9GU6Hc1og6Ls7i6U/mkkaduKaBhlAXv9k"
+        crossorigin="anonymous"></script>
+
+    <style>
+        table {
+            border: black solid 2px;
+        }
+
+        tr td {
+            border: black solid 2px;
+        }
+
+        img {
+            height: 50%;
+        }
+    </style>
+</head>
+
+<body>
+    <h1 style="text-align: center;">36小時 天氣速報</h1>
+
+    <table id="dt" width="100%">
+        <thead class="thead-dark">
+            <tr>
+                <th>編號</th>
+                <th>城市</th>
+                <th>時間一</th>
+                <th>時間二</th>
+                <th>時間三</th>
+            </tr>
+        </thead>
+        <tbody class="table-striped"></tbody>
+    </table>
+    <script>
+        let data;
+        // $.ajax({
+        //     url:"https://opendata.cwb.gov.tw/fileapi/v1/opendataapi/F-C0032-001?Authorization=CWB-DFFF73B6-12A6-45F6-9C17-5F9928B3C4E6&downloadType=WEB&format=JSON",
+        //     method:"GET",
+        //     dataType:"json",
+        //     success:function(result){
+        //         console.log(result);
+        //         data = result.cwbopendata.dataset.locations; //簡化過後寫法
+        //     }
+        // });
+
+        $.getJSON("https://opendata.cwb.gov.tw/fileapi/v1/opendataapi/F-C0032-001?Authorization=CWB-DFFF73B6-12A6-45F6-9C17-5F9928B3C4E6&downloadType=WEB&format=JSON").done(e => {
+            data = e.cwbopendata.dataset.location;
+            // console.log(data.length);
+            let print = "";
+            console.log(data);
+            for (let i = 0; i < data.length; i++) {
+                let row = data[i];
+
+                print += `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${data[i].locationName}</td>
+                    <td>
+                    <img src="./img/day/${data[i].weatherElement[0].time[0].parameter.parameterValue}.svg" alt=""> 
+                    ${data[i].weatherElement[0].time[0].parameter.parameterName}
+                    ${data[i].weatherElement[2].time[0].parameter.parameterName}~
+                    ${data[i].weatherElement[1].time[0].parameter.parameterName}℃
+                    </td>
+                    <td>
+                    <img src="./img/day/${data[i].weatherElement[0].time[1].parameter.parameterValue}.svg" alt="">
+                    ${data[i].weatherElement[0].time[1].parameter.parameterName}
+                    ${data[i].weatherElement[2].time[1].parameter.parameterName}~
+                    ${data[i].weatherElement[1].time[1].parameter.parameterName}℃
+
+                     </td>
+                    <td>
+                    <img src="./img/day/${data[i].weatherElement[0].time[2].parameter.parameterValue}.svg" alt="">
+                    ${data[i].weatherElement[0].time[2].parameter.parameterName}
+                     ${data[i].weatherElement[2].time[2].parameter.parameterName}~
+                     ${data[i].weatherElement[1].time[2].parameter.parameterName}℃
+
+                     </td>
+                </tr>
+               `;
+            }
+            $("tbody").html(print)
+
+            let date1 = new Date(data[0].weatherElement[0].time[0].startTime);
+            let date2 = new Date(data[0].weatherElement[0].time[1].startTime);
+            let date3 = new Date(data[0].weatherElement[0].time[2].startTime);
+
+            let hourtxt = new Array();
+            hourtxt[0] = "凌晨";
+            hourtxt[6] = "白天";
+            hourtxt[12] = "下午";
+            hourtxt[18] = "晚上";
+
+
+
+            $("thead").find("th").eq(2).text(`${date1.getFullYear()}-${date1.getMonth() + 1}-${date1.getDate()}| ${hourtxt[date1.getHours()]}`);
+            $("thead").find("th").eq(3).text(`${date2.getFullYear()}-${date2.getMonth() + 1}-${date2.getDate()}| ${hourtxt[date2.getHours()]}`);
+            $("thead").find("th").eq(4).text(`${date3.getFullYear()}-${date3.getMonth() + 1}-${date3.getDate()}| ${hourtxt[date3.getHours()]}`);
+
+
+            $("#dt").DataTable();
+        })
+
+    </script>
+
+
+</body>
+
+</html>
